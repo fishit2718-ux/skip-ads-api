@@ -1,0 +1,74 @@
+
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({
+    name: "SKIP ADS PRO",
+    status: "online",
+    version: "1.0"
+  });
+});
+
+app.post("/api/check", (req, res) => {
+  const link = req.body.link;
+
+  if (!link || typeof link !== "string") {
+    return res.status(400).json({
+      success: false,
+      message: "Link tidak valid"
+    });
+  }
+
+  let url;
+
+  try {
+    url = new URL(link);
+  } catch {
+    return res.status(400).json({
+      success: false,
+      message: "Format URL salah"
+    });
+  }
+
+  if (url.protocol !== "https:") {
+    return res.status(400).json({
+      success: false,
+      message: "Gunakan HTTPS"
+    });
+  }
+
+  const host = url.hostname.toLowerCase();
+
+  const services = {
+    "sfl.gl": "SFL.gl",
+    "linkvertise.com": "Linkvertise",
+    "sub2unlock.com": "Sub2Unlock",
+    "bicolink.com": "Bicolink",
+    "move2link.com": "Move2Link",
+    "mediafire.com": "MediaFire"
+  };
+
+  const service = Object.entries(services)
+    .find(([domain]) =>
+      host === domain || host.endsWith("." + domain)
+    );
+
+  res.json({
+    success: true,
+    service: service ? service[1] : "Unknown",
+    detected: !!service,
+    message: "Pemeriksaan link selesai"
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("SKIP ADS PRO API ONLINE");
+});
